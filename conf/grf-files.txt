@@ -4,9 +4,10 @@
 //-----------------------------------------
 //grf: C:\Program Files\Gravity\RO\rdata.grf
 //grf: C:\Program Files\Gravity\RO\data.grf
-
+grf: C:\Users\Public\Documents\BladeRO2\data.grf
 //-----------------------------------------
 // Data Directory
 // Use the base folder, not the data\ path.
 //-----------------------------------------
 //data_dir: C:\Program Files\Gravity\RO\
+data_dir: C:\Users\Public\Documents\BladeRO2\
