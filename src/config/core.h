@@ -8,6 +8,10 @@
  * For detailed guidance on these check http://rathena.org/wiki/SRC/config/
  **/
 
+ 
+ /// Enable Super Mario RPG Changes
+ #define SEVENSTARS
+ 
 /// Max number of items on @autolootid list
 #define AUTOLOOTITEM_SIZE 10
 

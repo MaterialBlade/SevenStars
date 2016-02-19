@@ -958,6 +958,12 @@ int64 battle_calc_damage(struct block_list *src,struct block_list *bl,struct Dam
 	int div_ = d->div_, flag = d->flag;
 
 	nullpo_ret(bl);
+	
+#ifdef SEVENSTARS
+		//all attacks are taekwon dodged
+	//clif_skill_nodamage(bl,bl,TK_DODGE,1,1);
+	//return 0;
+#endif
 
 	if( !damage )
 		return 0;
@@ -1842,6 +1848,43 @@ static int64 battle_calc_base_damage(struct status_data *status, struct weapon_a
 	short type = 0;
 	int64 damage = 0;
 
+	#ifdef SEVENSTARS
+	if (!sd) { //Mobs/Pets Kyle's Note: Mobs are fine, its the player we care about
+		atkmin = wa->atk;
+		atkmax = wa->atk2;
+		if (atkmin > atkmax)
+			atkmin = atkmax;
+		
+		damage = 15;
+		return damage;
+		
+	} else { //PCs
+		// atkmax = wa->atk;
+		// type = (wa == &status->lhw)?EQI_HAND_L:EQI_HAND_R;
+
+		// if (!(flag&1) || (flag&2)) { //Normal attacks
+			// atkmin = status->dex;
+
+			// if (sd->equip_index[type] >= 0 && sd->inventory_data[sd->equip_index[type]])
+				// atkmin = atkmin*(80 + sd->inventory_data[sd->equip_index[type]]->wlv*20)/100;
+
+			// if (atkmin > atkmax)
+				// atkmin = atkmax;
+
+			// if(flag&2 && !(flag&16)) { //Bows
+				// atkmin = atkmin*atkmax/100;
+				// if (atkmin > atkmax)
+					// atkmax = atkmin;
+			// }
+		// }
+		
+		damage = 25;
+		return damage;
+		
+		
+	}
+	#endif
+	
 	if (!sd) { //Mobs/Pets
 		if(flag&4) {
 			atkmin = status->matk_min;
