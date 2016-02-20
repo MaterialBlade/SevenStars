@@ -1015,3 +1015,5 @@ paramk
 //tank_test
 //tank_test2
 //test
+mush_way01	1250
+mush_way02
