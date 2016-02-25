@@ -409,6 +409,11 @@ struct item_data
 #ifdef RENEWAL
 	int matk;
 #endif
+#ifdef SEVENSTARS
+	int ss_PA;
+	int ss_WP;
+	int ss_P;
+#endif
 
 	int delay;
 //Lupus: I rearranged order of these fields due to compatibility with ITEMINFO script command

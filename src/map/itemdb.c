@@ -1326,6 +1326,12 @@ static bool itemdb_parse_dbrow(char** str, const char* source, int line, int scr
 	id->view_id = 0;
 	id->sex = itemdb_gendercheck(id); //Apply gender filtering.
 
+#ifdef SEVENSTARS
+	id->ss_PA = atoi(str[19]);
+	id->ss_WP = atoi(str[20]);
+	id->ss_P = atoi(str[21]);
+#endif
+
 	if (id->script) {
 		script_free_code(id->script);
 		id->script = NULL;
@@ -1339,6 +1345,20 @@ static bool itemdb_parse_dbrow(char** str, const char* source, int line, int scr
 		id->unequip_script = NULL;
 	}
 
+#ifdef SEVENSTARS
+	if (*str[22])
+		id->script = parse_script(str[22], source, line, scriptopt);
+	if (*str[23])
+		id->equip_script = parse_script(str[23], source, line, scriptopt);
+	if (*str[24])
+		id->unequip_script = parse_script(str[24], source, line, scriptopt);
+
+	if (!id->nameid) {
+		id->nameid = nameid;
+		uidb_put(itemdb, nameid, id);
+	}
+	return true;
+#else
 	if (*str[19])
 		id->script = parse_script(str[19], source, line, scriptopt);
 	if (*str[20])
@@ -1351,6 +1371,7 @@ static bool itemdb_parse_dbrow(char** str, const char* source, int line, int scr
 		uidb_put(itemdb, nameid, id);
 	}
 	return true;
+#endif
 }
 
 /**
@@ -1394,7 +1415,11 @@ static int itemdb_readdb(void){
 				++p;
 			if( *p == '\0' )
 				continue;// empty line
+#ifdef SEVENSTARS
+			for( i = 0; i < 22; ++i )
+#else
 			for( i = 0; i < 19; ++i )
+#endif
 			{
 				str[i] = p;
 				p = strchr(p,',');
@@ -1416,7 +1441,11 @@ static int itemdb_readdb(void){
 				ShowError("itemdb_readdb: Invalid format (Script column) in line %d of \"%s\" (item with id %d), skipping.\n", lines, path, atoi(str[0]));
 				continue;
 			}
+#ifdef SEVENSTARS
+			str[22] = p;
+#else
 			str[19] = p;
+#endif
 			p = strstr(p+1,"},");
 			if( p == NULL )
 			{
@@ -1432,7 +1461,11 @@ static int itemdb_readdb(void){
 				ShowError("itemdb_readdb: Invalid format (OnEquip_Script column) in line %d of \"%s\" (item with id %d), skipping.\n", lines, path, atoi(str[0]));
 				continue;
 			}
+#ifdef SEVENSTARS
+			str[23] = p;
+#else
 			str[20] = p;
+#endif
 			p = strstr(p+1,"},");
 			if( p == NULL )
 			{
@@ -1448,8 +1481,27 @@ static int itemdb_readdb(void){
 				ShowError("itemdb_readdb: Invalid format (OnUnequip_Script column) in line %d of \"%s\" (item with id %d), skipping.\n", lines, path, atoi(str[0]));
 				continue;
 			}
-			str[21] = p;
 
+#ifdef SEVENSTARS
+			str[24] = p;
+			if ( str[24][strlen(str[24])-2] != '}' ) {
+				/* lets count to ensure it's not something silly e.g. a extra space at line ending */
+				int v, lcurly = 0, rcurly = 0;
+
+				for( v = 0; v < strlen(str[24]); v++ ) {
+					if( str[24][v] == '{' )
+						lcurly++;
+					else if ( str[24][v] == '}' )
+						rcurly++;
+				}
+
+				if( lcurly != rcurly ) {
+					ShowError("itemdb_readdb: Mismatching curly braces in line %d of \"%s\" (item with id %d), skipping.\n", lines, path, atoi(str[0]));
+					continue;
+				}
+			}
+#else
+			str[21] = p;
 			if ( str[21][strlen(str[21])-2] != '}' ) {
 				/* lets count to ensure it's not something silly e.g. a extra space at line ending */
 				int v, lcurly = 0, rcurly = 0;
@@ -1466,6 +1518,7 @@ static int itemdb_readdb(void){
 					continue;
 				}
 			}
+#endif
 
 			if (!itemdb_parse_dbrow(str, path, lines, 0))
 				continue;
@@ -1496,6 +1549,7 @@ static int itemdb_read_sqldb(void) {
 	};
 	int fi;
 
+#ifndef SEVENSTARS
 	for( fi = 0; fi < ARRAYLENGTH(item_db_name); ++fi ) {
 		uint32 lines = 0, count = 0;
 
@@ -1527,6 +1581,39 @@ static int itemdb_read_sqldb(void) {
 
 		ShowStatus("Done reading '"CL_WHITE"%lu"CL_RESET"' entries in '"CL_WHITE"%s"CL_RESET"'.\n", count, item_db_name[fi]);
 	}
+#else
+	for (fi = 0; fi < ARRAYLENGTH(item_db_name); ++fi) {
+		uint32 lines = 0, count = 0;
+
+		// retrieve all rows from the item database
+		if (SQL_ERROR == Sql_Query(mmysql_handle, "SELECT * FROM `%s`", item_db_name[fi])) {
+			Sql_ShowDebug(mmysql_handle);
+			continue;
+		}
+
+		// process rows one by one
+		while (SQL_SUCCESS == Sql_NextRow(mmysql_handle)) {// wrap the result into a TXT-compatible format
+			char* str[25];
+			char* dummy = "";
+			int i;
+			++lines;
+			for (i = 0; i < 25; ++i) {
+				Sql_GetData(mmysql_handle, i, &str[i], NULL);
+				if (str[i] == NULL)
+					str[i] = dummy; // get rid of NULL columns
+			}
+
+			if (!itemdb_parse_dbrow(str, item_db_name[fi], lines, SCRIPT_IGNORE_EXTERNAL_BRACKETS))
+				continue;
+			++count;
+		}
+
+		// free the query result
+		Sql_FreeResult(mmysql_handle);
+
+		ShowStatus("Done reading '"CL_WHITE"%lu"CL_RESET"' entries in '"CL_WHITE"%s"CL_RESET"'.\n", count, item_db_name[fi]);
+	}
+#endif
 
 	return 0;
 }
