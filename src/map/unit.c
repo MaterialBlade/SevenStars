@@ -2201,6 +2201,8 @@ int unit_attack(struct block_list *src,int target_id,int continuous)
 	struct unit_data  *ud;
 	int range;
 
+	ShowInfo("unit_attack\n");
+
 	nullpo_ret(ud = unit_bl2ud(src));
 
 	target = map_id2bl(target_id);
@@ -2627,6 +2629,8 @@ static int unit_attack_timer_sub(struct block_list* src, int tid, unsigned int t
 static int unit_attack_timer(int tid, unsigned int tick, int id, intptr_t data)
 {
 	struct block_list *bl;
+
+	ShowInfo("unit_attack_timer\n");
 
 	bl = map_id2bl(id);
 

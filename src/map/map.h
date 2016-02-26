@@ -45,7 +45,13 @@ void map_msg_reload(void);
 #define NATURAL_HEAL_INTERVAL 500
 #define MIN_FLOORITEM 2
 #define MAX_FLOORITEM START_ACCOUNT_NUM
+
+//#ifdef SEVENSTARS
+//#define MAX_LEVEL 30
+//#else
 #define MAX_LEVEL 175
+//#endif
+
 #define MAX_DROP_PER_MAP 48
 #define MAX_IGNORE_LIST 20 	// official is 14
 #define MAX_VENDING 12
