@@ -1,0 +1,7 @@
+//<from map name>,<fromX>,<fromY>,<facing>%TAB%warp%TAB%<warp name>%TAB%<spanx>,<spany>,<to map name>,<toX>,<toY>
+mush_way00,125,122,0	warp	mush00-02	1,1,mush_way02,69, 96
+mush_way02,65,96,0	warp	mush02-00	1,1,mush_way00,120, 123
+
+mush_way02,112,57,0	warp	mush02-01	1,1,mush_way01,86,151
+mush_way01,86,156,0	warp	mush01-02	1,1,mush_way02,112,61
+//112,61

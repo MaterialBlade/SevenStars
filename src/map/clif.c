@@ -4510,14 +4510,33 @@ int clif_damage(struct block_list* src, struct block_list* dst, unsigned int tic
 			if(damage) damage = damage*(sc->data[SC_HALLUCINATION]->val2) + rnd()%100;
 			if(damage2) damage2 = damage2*(sc->data[SC_HALLUCINATION]->val2) + rnd()%100;
 		}
+
+#ifndef SEVENSTARS
+		if (sc->data[SC_DEFEND]) {
+			if (damage && damage>1) damage = damage/2;
+		}
+
+		if (sc->data[SC_PERFECTDEFEND]) {
+			if (damage) damage = 8008;
+		}
+#endif
 	}
 
 	WBUFW(buf,0)=cmd;
 	WBUFL(buf,2)=src->id;
+	
+#ifdef SEVENSTARS
+	WBUFL(buf, 6) = dst->id;
+	WBUFL(buf, 10) = 0;
+	WBUFL(buf,14)=0;
+	WBUFL(buf,18)=0;
+#else
 	WBUFL(buf,6)=dst->id;
 	WBUFL(buf,10)=tick;
 	WBUFL(buf,14)=sdelay;
 	WBUFL(buf,18)=ddelay;
+#endif
+
 #if PACKETVER < 20071113
 	if (battle_config.hide_woe_damage && map_flag_gvg(src->m)) {
 		WBUFW(buf,22)=damage?div:0;
@@ -5409,6 +5428,15 @@ int clif_skill_nodamage(struct block_list *src,struct block_list *dst,uint16 ski
 	unsigned char buf[32];
 
 	nullpo_ret(dst);
+
+#ifdef SEVENSTARS
+	//put the pickingup item packet here
+	//int clif_damage(struct block_list* src, struct block_list* dst, unsigned int tick, int sdelay, int ddelay, int64 sdamage, int div, enum e_damage_type type, int64 sdamage2)
+	if (skill_id == ALL_DEFENCE){
+		clif_damage(src, src, 1000, 1000, 1000, 0, 1, DMG_PICKUP_ITEM, 0);
+		return fail;
+	}
+#endif
 
 	WBUFW(buf,0)=0x11a;
 	WBUFW(buf,2)=skill_id;

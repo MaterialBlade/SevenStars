@@ -1,0 +1,138 @@
+//==================================================
+// Hammer Bros Battle
+//==================================================
+-	script	HammerBattle	-1,{
+	OnInit:
+		set .hammer_battle,2;
+		disablenpc "Hammer Warp";
+		disablenpc "Trampoline#hammerbros";
+		disablenpc "Hammer Warp3";
+	end;
+	
+	OnStartBattle:		
+		monster "mush_boss",91,110,"Hammer Bros.",3506,1,strnpcinfo(0)+"::OnBroDie";
+		monster "mush_boss",108,108,"Hammer Bros.",3506,1,strnpcinfo(0)+"::OnBroDie";
+		
+		disablenpc "Hammer Bros.";
+		enablenpc "Hammer Warp";
+	end;
+	
+	OnBroDie:
+		.hammer_battle = .hammer_battle - 1;
+		if(.hammer_battle==0){
+			enablenpc "Trampoline#hammerbros";
+			specialeffect 446, AREA, "Trampoline#hammerbros";
+			soundeffectall "trampoline.wav",0;
+			disablenpc "Hammer Warp";
+			enablenpc "Hammer Warp3";
+		}
+	end;
+}
+
+mush_way01,139,65,4	script	Hammer Bros.	47,{
+	
+//	if(getgmlevel()>=99){
+//		mes "[Hammer Bros.]";
+//		mes "Hey, what's up boss?";
+//		mes " ";
+//		mes "What are we doing today?";
+//		next;
+//		switch(select("Reset Kill Status:Set Killed:Continue")) {
+//		case 1:
+//			set $hammer_dead, 0;
+//			mes "[Hammer Bros.]";
+//			mes "hammer_dead is set to 0!";
+//			close;
+			
+//		case 2:
+//			set $hammer_dead, 1;
+//			mes "[Hammer Bros.]";
+//			mes "OUCH! That sucks!";
+//			mes " ";
+//			mes "hammer_dead is set to 1!";
+//			close;
+//			
+//		case 3:
+//			next;			
+//		}
+//	}
+
+	if($hammer_dead == 1){
+		mes "[Hammer Bros.]";
+		mes "HEY YOU!";
+		mes " ";
+		mes "Want a re-match?!";
+		next;
+		switch(select("You bet!:NOPE! Let me through!:Cancel")) {
+		case 1:
+		mes "[Hammer Bros.]";
+		mes "You're in for it this time!";
+		close;
+		case 2:
+		mes "[Hammer Bros.]";
+		mes "Fine. Whatever you say.";
+		close;
+		case 3:
+		mes "[Hammer Bros.]";
+		mes "That's what I thought WIMP!";
+		close;
+		}
+	}
+
+	if(hammer_mad > 0){
+		mes "[Hammer Bros.]";
+		mes "Now ya got my hammer angry!";
+		mes " ";
+		mes "Ya shouldn't have done that!";
+		set hammer_mad, 0;
+		close2;
+		addtimer 1000, "Hammer Bros.::OnDoWarp";
+		//addtimer 500, "Hammer Bros.::OnNPCevent";
+		//sleep 500;
+		//close2;
+		end;
+	} else {
+		set hammer_mad, 1;
+		mes "[Hammer Bros.]";
+		mes "HEY!";
+		mes "Are YOU lookin' at me?";
+		next;
+		mes "[Hammer Bros.]";
+		mes "My hammer and I don't like you!";
+		close;		
+	}
+	
+	end;
+	
+	OnDoWarp:
+		//soundeffectall "boss_fade.wav",0,"mush_boss";
+		soundeffectall "battle_start.wav",0;
+		warp "mush_boss",109,83;
+		donpcevent "HammerBattle::OnStartBattle";
+	end;
+	
+	OnNPCevent:
+		donpcevent "HammerBattle::OnStartBattle";
+	end;
+}
+
+mush_way01,139,65,4	script	Hammer Warp	45,1,1,{
+	OnTouch:
+		warp "mush_boss",109,83;
+	end;
+}
+
+mush_boss,85,96,4	script	Trampoline#hammerbros	48,1,1,{
+	end;
+
+	OnTouch:
+		soundeffectall "trampoline.wav",0;
+		warp "mush_way01",129,67;
+	end;
+}
+
+mush_way01,139,65,4	script	Hammer Warp3	45,1,1,{
+	OnTouch:
+		warp "mush_way01",101,74;
+	end;
+}

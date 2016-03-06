@@ -6104,6 +6104,23 @@ int skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, ui
 		}
 		break;
 
+#ifdef SEVENSTARS
+	case ALL_DEFENCE:
+		ShowInfo("defending!!\n");
+		//sc_start(src, bl, type, 100, skill_lv, skill_get_time(skill_id, skill_lv));
+		clif_skill_nodamage(src, bl, skill_id, skill_lv,
+			sc_start(src, bl, SC_DEFEND, 100, skill_lv, 550));
+		clif_skill_nodamage(src, bl, skill_id, skill_lv,
+			sc_start(src, bl, SC_PERFECTDEFEND, 100, skill_lv, 160));
+		//sc_start(src, bl, SC_DEFEND, 100, skill_lv, 1000);
+		//sc_start(src, bl, SC_PERFECTDEFEND, 100, skill_lv, 500);
+		//sc_start(src, src, SC_MARIONETTE, 100, bl->id, skill_get_time(skill_id, skill_lv));
+		//sc_start(src, src, SC_MARIONETTE, 100, bl->id, skill_get_time(skill_id, skill_lv));
+		//SC_DEFEND,
+		//SC_PERFECTDEFEND,
+		break;
+#endif
+
 	case PR_ASPERSIO:
 		if (sd && dstmd) {
 			clif_skill_nodamage(src,bl,skill_id,skill_lv,0);

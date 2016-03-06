@@ -720,6 +720,11 @@ typedef enum sc_type {
 #ifdef RENEWAL
 	SC_EXTREMITYFIST2, //! NOTE: This SC should be right before SC_MAX, so it doesn't disturb if RENEWAL is disabled
 #endif
+
+#ifdef SEVENSTARS
+	SC_DEFEND,
+	SC_PERFECTDEFEND,
+#endif
 	SC_MAX, //Automatically updated max, used in for's to check we are within bounds.
 } sc_type;
 

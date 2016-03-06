@@ -277,12 +277,35 @@ int battle_delay_damage_sub(int tid, unsigned int tick, int id, intptr_t data)
 
 		src = map_id2bl(dat->src_id);
 
+#ifdef SEVENSTARS
+		int red_damage;
+		struct status_change *sc;
+		sc = status_get_sc(target);
+		red_damage = dat->damage;
+		//if (target->type = )
+		if (sc->data[SC_DEFEND]){
+			red_damage = red_damage / 2;
+			red_damage = max(1, red_damage);
+			ShowInfo("defend\n");
+		}
+
+		if (sc->data[SC_PERFECTDEFEND]){
+			ShowInfo("perfect defend\n");
+			red_damage = 0;
+			clif_specialeffect(target, 611, AREA);
+		}
+#endif
 		if( src && target->m == src->m &&
 			(target->type != BL_PC || ((TBL_PC*)target)->invincible_timer == INVALID_TIMER) &&
 			check_distance_bl(src, target, dat->distance) ) //Check to see if you haven't teleported. [Skotlex]
 		{
 			map_freeblock_lock();
+#ifdef SEVENSTARS
+			clif_damage(target, target, gettick(), 1, 1, red_damage, 0, DMG_NORMAL, 0);
+			status_fix_damage(src, target, red_damage, gettick());
+#else
 			status_fix_damage(src, target, dat->damage, dat->delay);
+#endif
 			if( dat->attack_type && !status_isdead(target) && dat->additional_effects )
 				skill_additional_effect(src,target,dat->skill_id,dat->skill_lv,dat->attack_type,dat->dmg_lv,tick);
 			if( dat->dmg_lv > ATK_BLOCK && dat->attack_type )
@@ -1175,6 +1198,20 @@ int64 battle_calc_damage(struct block_list *src,struct block_list *bl,struct Dam
 		}
 #endif
 
+#ifdef SEVENSTARS
+		/*
+		if (sc->data[SC_DEFEND]){
+			damage = damage / 2;
+			ShowInfo("defend\n");
+		}
+
+		if (sc->data[SC_PERFECTDEFEND]){
+			ShowInfo("perfect defend\n");
+			damage = 0;
+		}
+		*/
+#endif
+
 		if( damage ) {
 			struct map_session_data *tsd = BL_CAST(BL_PC, src);
 			if( sc->data[SC_DEEPSLEEP] ) {
@@ -2017,34 +2054,35 @@ static int64 ss_battle_calc_base_damage(struct status_data *status, struct weapo
 		//	atkmin = atkmax;
 	}
 	else { //PCs
-		atkmax = wa->atk;
+		//atkmax = wa->atk; //wa is the weapon. we dont want that
+		atkmax = status->batk;
 		//type = (wa == &status->lhw) ? EQI_HAND_L : EQI_HAND_R;
 
 		if (!(flag & 1) || (flag & 2)) { //Normal attacks
 			//atkmin = status->dex;
 
 			//GET THE ss_PA,ss_WP, AND ss_P!!!
-			ShowInfo("ss_battle_calc_base_damage: got through flags!\n");
+			//ShowInfo("ss_battle_calc_base_damage: got through flags!\n");
 			//ss_PA = player attack
 			//ss_WP = weapon power (attack)
 			//ss_P = weapon power level thing
 
 			//					armor is the weapon!!
 			if (sd->equip_index[EQI_ARMOR] >= 0 && sd->inventory_data[sd->equip_index[EQI_ARMOR]]){
-				ShowInfo("ss_battle_calc_base_damage: got thru if() statement\n");
+				//ShowInfo("ss_battle_calc_base_damage: got thru if() statement\n");
 				ss_WP = sd->inventory_data[sd->equip_index[EQI_ARMOR]]->ss_WP;
 				ss_P = sd->inventory_data[sd->equip_index[EQI_ARMOR]]->ss_P;
 
-				ShowInfo("ss_battle_calc_base_damage: got thru declarations\n");
+				//ShowInfo("ss_battle_calc_base_damage: got thru declarations\n");
 				//mario's base attack is 20 so elt's go with that
 				int diff = rnd() % (ss_P*2 + 1) + (-P);
 				//int rand = (rnd() % (ss_P * 2));
-				ShowInfo("ss_battle_calc_base_damage->diff: %d \n", diff);
+				//ShowInfo("ss_battle_calc_base_damage->diff: %d \n", diff);
 				P = diff - ss_P;
-				ShowInfo("ss_battle_calc_base_damage: got thru P\n");
-				atkmax = max(1, (20 + ss_WP + P));
-				ShowInfo("ss_battle_calc_base_damage: got thru max\n");
-				ShowInfo("ss_battle_calc_base_damage: got thru math!\n");
+				//ShowInfo("ss_battle_calc_base_damage: got thru P\n");
+				atkmax = max(1, (atkmax + ss_WP + P));
+				//ShowInfo("ss_battle_calc_base_damage: got thru max\n");
+				//ShowInfo("ss_battle_calc_base_damage: got thru math!\n");
 			}
 
 			//if (sd->equip_index[type] >= 0 && sd->inventory_data[sd->equip_index[type]])
@@ -4907,9 +4945,9 @@ struct Damage ss_battle_calc_defense_reduction(struct Damage wd, struct block_li
 
 
 	ShowInfo("battle_calc_defense_reduction\n");
-	ShowInfo("DEFENSE - def1: %d  def2: %d  vit_def: \n", def1, def2);
+	//ShowInfo("DEFENSE - def1: %d  def2: %d  vit_def: \n", def1, def2);
 	wd.damage -= def1; //final damage is reduced by enemy defense and nothing else
-	printf("SKIP EVERYTHING FUCK YOU!!\n");
+	//printf("SKIP EVERYTHING FUCK YOU!!\n");
 	return wd;
 
 	if (sd) {
@@ -5894,7 +5932,7 @@ static struct Damage ss_battle_calc_weapon_attack(struct block_list *src, struct
 
 #ifdef SEVENSTARS
 	ShowInfo("battle_calc_weapon_attack: ");
-	printf("skill_id: %d skill_lv: %d wflag: %d \n", skill_id, skill_lv, wflag);
+	//printf("skill_id: %d skill_lv: %d wflag: %d \n", skill_id, skill_lv, wflag);
 	/*
 	wd = initialize_weapon_data(src, target, skill_id, skill_lv, wflag);
 
@@ -6102,6 +6140,7 @@ static struct Damage ss_battle_calc_weapon_attack(struct block_list *src, struct
 	break;
 	}
 	*/
+	wd = battle_calc_attack_gvg_bg(wd, src, target, skill_id, skill_lv);
 
 	//wd = battle_calc_weapon_final_atk_modifiers(wd, src, target, skill_id, skill_lv);
 
@@ -7576,7 +7615,8 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 
 	//random 2% chance to miss!
 	if (rnd() % 100 < 2){
-		clif_damage(src, target, tick, sstatus->amotion, 1, 0, 1, DMG_NORMAL, 0); //Display MISS.
+		//clif_damage(src, target, tick, sstatus->amotion, 1, 0, 1, DMG_NORMAL, 0); //Display MISS.
+		clif_specialeffect(target, 611, AREA); //display actual miss?
 		return ATK_MISS;
 	}
 
@@ -7586,9 +7626,10 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 
 	//send the damage packet apparently
 	//wd.dmotion = clif_damage(src, target, tick, wd.amotion, wd.dmotion, wd.damage, wd.div_, (enum e_damage_type)wd.type, wd.damage2);
-	printf("battle info: damage: %d, damage2: %d damage type: %d \n", wd.damage, wd.damage2, (enum e_damage_type)wd.type);
-	wd.dmotion = clif_damage(src, target, tick, wd.amotion, wd.dmotion, wd.damage, wd.div_, DMG_NORMAL, wd.damage2);
-
+	//printf("battle info: damage: %d, damage2: %d damage type: %d level?: %d\n", wd.damage, wd.damage2, (enum e_damage_type)wd.type, wd.dmg_lv);
+	//wd.dmotion = clif_damage(src, target, tick, wd.amotion, wd.dmotion, wd.damage, wd.div_, DMG_NORMAL, wd.damage2);
+	clif_damage(src, target, gettick(), 0, 0, 0, 0, DMG_NORMAL, 0); //play the attack animation?
+	wd.dmotion = 1;
 
 	map_freeblock_lock();
 

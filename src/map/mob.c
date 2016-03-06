@@ -2324,7 +2324,11 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 				double exp = apply_rate2(md->db->base_exp, per, 1);
 				exp = apply_rate(exp, bonus);
 				exp = apply_rate(exp, map[m].adjust.bexp);
+#ifdef SEVENSTARS
+				base_exp = (unsigned int)cap_value(exp, 0, UINT_MAX);
+#else
 				base_exp = (unsigned int)cap_value(exp, 1, UINT_MAX);
+#endif
 			}
 
 			if (map[m].flag.nojobexp || !md->db->job_exp || md->dmglog[i].flag == MDLF_HOMUN) //Homun earned job-exp is always lost.
@@ -2377,7 +2381,13 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 							job_exp = (unsigned int)cap_value(apply_rate(job_exp, rate), 1, UINT_MAX);
 						}
 #endif
+
+#ifdef SEVENSTARS
+						pc_gainexp(tmpsd[i], &md->bl, 0, job_exp, false);
+#else
 						pc_gainexp(tmpsd[i], &md->bl, base_exp, job_exp, false);
+#endif
+						
 					}
 				}
 				if(zeny) // zeny from mobs [Valaris]
@@ -2573,7 +2583,11 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 
 		clif_mvp_effect(mvp_sd);
 		clif_mvp_exp(mvp_sd,mexp);
+#ifdef SEVENSTARS
+		pc_gainexp(mvp_sd, &md->bl, 0, 0, false);
+#else
 		pc_gainexp(mvp_sd, &md->bl, mexp,0, false);
+#endif
 		log_mvp[1] = mexp;
 
 		if( !(map[m].flag.nomvploot || type&1) ) {

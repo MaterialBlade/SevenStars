@@ -1017,3 +1017,6 @@ paramk
 //test
 mush_way01	1250
 mush_way02
+mush_way00
+mush_boss
+star_road

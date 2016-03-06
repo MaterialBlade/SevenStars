@@ -5624,3 +5624,7 @@
 4215,2569,5,2553,1,0,0,0,0,0,0,0,0 //RL_AM_BLAST#Anti-Material Blast#
 4215,2570,5,2554,3,0,0,0,0,0,0,0,0 //RL_SLUGSHOT#Slug Shot#
 4215,2571,5,2569,3,0,0,0,0,0,0,0,0 //RL_HAMMER_OF_GOD#Hammer of God#
+
+//JobNo,Skill-ID,MaxLV{,JobLV},Prerequisite Skill-ID-1,Prerequisite Skill-ID-1-Lv,PrereqSkill-ID-2,PrereqSkill-ID-2-Lv,PrereqSkill-ID-3,PrereqSkill-ID-3-Lv,PrereqSkill-ID-4,PrereqSkill-ID-4-Lv,PrereqSkill-ID-5,PrereqSkill-ID-5-Lv//CLASS_SKILLNAME#Skill Name#
+
+

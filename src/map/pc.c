@@ -5743,6 +5743,9 @@ int pc_jobid2mapid(unsigned short b_class)
 		case JOB_BABY_SURA:             return MAPID_BABY_SURA;
 		case JOB_BABY_GENETIC:          return MAPID_BABY_GENETIC;
 		case JOB_BABY_CHASER:           return MAPID_BABY_CHASER;
+
+	//CUSTOM JAWBS
+		case JOB_SPIKEY:				return MAPID_SPIKEY;
 		default:
 			return -1;
 	}
@@ -5879,6 +5882,9 @@ int pc_mapid2jobid(unsigned short class_, int sex)
 		case MAPID_BABY_SURA:             return JOB_BABY_SURA;
 		case MAPID_BABY_GENETIC:          return JOB_BABY_GENETIC;
 		case MAPID_BABY_CHASER:           return JOB_BABY_CHASER;
+
+	//CUSTOM JAWBS
+		case MAPID_SPIKEY:					return JOB_SPIKEY;
 		default:
 			return -1;
 	}
@@ -6106,6 +6112,9 @@ const char* job_name(int class_)
 	case JOB_REBELLION:
 		return msg_txt(NULL,695);
 
+	case JOB_SPIKEY:
+		return msg_txt(NULL, 700);
+
 	default:
 		return msg_txt(NULL,655);
 	}
@@ -6272,6 +6281,9 @@ int pc_checkjoblevelup(struct map_session_data *sd)
 	clif_updatestatus(sd,SP_SKILLPOINT);
 	status_calc_pc(sd,SCO_FORCE);
 	clif_misceffect(&sd->bl,1);
+#ifdef SEVENSTARS
+	status_percent_heal(&sd->bl, 100, 100);
+#endif
 	if (pc_checkskill(sd, SG_DEVIL) && !pc_nextjobexp(sd))
 		clif_status_change(&sd->bl,SI_DEVIL, 1, 0, 0, 0, 1); //Permanent blind effect from SG_DEVIL.
 
@@ -6319,8 +6331,11 @@ static void pc_calcexp(struct map_session_data *sd, unsigned int *base_exp, unsi
 		if( battle_config.vip_bm_increase && pc_isvip(sd) ) // Increase Battle Manual EXP rate for VIP.
 			bonus += ( sd->sc.data[SC_EXPBOOST]->val1 / battle_config.vip_bm_increase );
 	}
-
+#ifdef SEVENSTARS
+	*base_exp = (unsigned int) cap_value(*base_exp + (double)*base_exp * (bonus + vip_bonus_base)/100., 0, UINT_MAX);
+#else
 	*base_exp = (unsigned int) cap_value(*base_exp + (double)*base_exp * (bonus + vip_bonus_base)/100., 1, UINT_MAX);
+#endif
 
 	if (&sd->sc && sd->sc.data[SC_JEXPBOOST])
 		bonus += sd->sc.data[SC_JEXPBOOST]->val1;
@@ -6336,6 +6351,10 @@ int pc_gainexp(struct map_session_data *sd, struct block_list *src, unsigned int
 {
 	float nextbp = 0, nextjp = 0;
 	unsigned int nextb = 0, nextj = 0;
+
+#ifdef SEVENSTARS
+	base_exp = 0;
+#endif
 
 	nullpo_ret(sd);
 
@@ -10605,6 +10624,50 @@ static bool pc_readdb_job2(char* fields[], int columns, int current)
 	return true;
 }
 
+//Reading job_growth.txt line (class,JobLv1,JobLv2,JobLv3,...)
+static bool pc_readdb_jobgrowth(char* fields[], int columns, int current)
+{
+	int idx, class_, index;
+	uint16 hp, atk, def, matk, mdef;
+
+	class_ = atoi(fields[0]);
+
+	if (!pcdb_checkid(class_)){
+		ShowError("pc_readdb_jobgrowth: Invalid job '%s'. Skipping!", fields[0]);
+		return false;
+	}
+
+	idx = pc_class2idx(class_);
+
+	index = atoi(fields[1]);
+	hp = atoi(fields[2]);
+	atk = atoi(fields[3]);
+	def = atoi(fields[4]);
+	matk = atoi(fields[5]);
+	mdef = atoi(fields[6]);
+
+	job_growth[idx].bonus[index].hp = hp;
+	job_growth[idx].bonus[index].atk = atk;
+	job_growth[idx].bonus[index].def = def;
+	job_growth[idx].bonus[index].matk = matk;
+	job_growth[idx].bonus[index].mdef = mdef;
+	/*str = cap_value(atoi(fields[1]), 10, SHRT_MAX);
+	agi = atoi(fields[2]) ? cap_value(atoi(fields[2]), 10, SHRT_MAX) : str;
+	vit = atoi(fields[3]) ? cap_value(atoi(fields[3]), 10, SHRT_MAX) : str;
+	int_ = atoi(fields[4]) ? cap_value(atoi(fields[4]), 10, SHRT_MAX) : str;
+	dex = atoi(fields[5]) ? cap_value(atoi(fields[5]), 10, SHRT_MAX) : str;
+	luk = atoi(fields[6]) ? cap_value(atoi(fields[6]), 10, SHRT_MAX) : str;
+
+	job_info[idx].max_param.str = str;
+	job_info[idx].max_param.agi = agi;
+	job_info[idx].max_param.vit = vit;
+	job_info[idx].max_param.int_ = int_;
+	job_info[idx].max_param.dex = dex;
+	job_info[idx].max_param.luk = luk;*/
+
+	return true;
+}
+
 //Reading job_exp.txt line
 //Max Level,Class list,Type (0 - Base Exp; 1 - Job Exp),Exp/lvl...
 static bool pc_readdb_job_exp(char* fields[], int columns, int current)
@@ -10891,6 +10954,9 @@ void pc_readdb(void) {
 		sv_readdb(dbsubpath2, "job_basehpsp_db.txt", ',', 4, 4+500, CLASS_COUNT*2, &pc_readdb_job_basehpsp, i); //Make it support until lvl 500!
 #endif
 		sv_readdb(dbsubpath2, "job_param_db.txt", ',', 2, PARAM_MAX+1, CLASS_COUNT, &pc_readdb_job_param, i);
+#ifdef SEVENSTARS
+		sv_readdb(dbsubpath1, "job_growth.txt", ',', 1, 1 + MAX_LEVEL, CLASS_COUNT, &pc_readdb_jobgrowth, i);
+#endif
 		aFree(dbsubpath1);
 		aFree(dbsubpath2);
 	}

@@ -354,6 +354,10 @@ static void itemdb_jobid2mapid(unsigned int *bclass, unsigned int jobmask)
 		bclass[1] |= 1<<MAPID_NINJA;
 	if (jobmask & 1<<30) //Rebellion
 		bclass[1] |= 1<<MAPID_GUNSLINGER;
+
+	//custom jawbs
+	if (jobmask & 1 << 31) //spikey
+		bclass[0] |= 1 << MAPID_SPIKEY;
 }
 
 /**

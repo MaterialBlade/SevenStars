@@ -1,0 +1,82 @@
+//===== rAthena Script ======================================= 
+//= Swordsman Job Quest
+//===== By: ================================================== 
+//= kobra_k88; L0ne_W0lf
+//===== Current Version: ===================================== 
+//= 2.3
+//===== Compatible With: ===================================== 
+//= rAthena Project
+//===== Description: ========================================= 
+//= [Official Conversion]
+//= Job quest for Swordman classes
+//= Uses Job_sword1 as opposed to sword_1-1 -> sword_3-1.
+//= EXPLOITABLE in a sense because while the sword_x-1 maps
+//= are marked as "inside" by the client, job_sword1 is not.
+//= giving players FREE camera rotation while doing the job quest.
+//===== Additional Comments: ================================= 
+//= 1.0 Fully working.
+//= 1.1 Added instant job change for High Novice [Lupus]
+//= 1.3 Added Baby Class support [Lupus]
+//= 1.4 Changed the timing system to initnpctimer, now you do get warnings about time
+//=     and are limited to 7min to complete the quest [Fredzilla]
+//= 1.5 Optimised and moved first checker to Jfunc1-1 [massdriller]
+//= 1.5.1 Fixed possible EXP abuse [Lupus]
+//= 1.5.2 Now saves/restores all quest skills [Lupus]
+//= 1.5.3 Removed Duplicates [Silent]
+//= 1.6 Merged back JFunc, CHANGED NUMBERS TO CONSTANTS [Lupus]
+//= 1.7 changed location from its clone to the original [Lupus]
+//= 1.7.1 Fixed warp on timeout [KarLaeda]
+//= 1.8 Rescripted to Aegis 10.3 stadards. [L0ne_W0lf]
+//=     Removed "green" traps, quest is no longer timed.
+//=     No longer uses function "F_ToHigh"
+//= 1.9 Dialog is official, but the Script is now custom as far as maps go. [L0ne_W0lf]
+//= 1.9b Fixed usage of wrong jobchange func messing up baby classes [ultramage]
+//= 2.0 Corrected NPC names to fall within proper resctrictions. [L0ne_W0lf]
+//= 2.1 Fixed mistake in condition check. [L0ne_W0lf]
+//= 2.2 Warp portals dont end with ; [Yommy]
+//= 2.3 Added Quest Log commands. [L0ne_W0lf]
+//============================================================ 
+
+star_road,105,90,4	script	Higher Power#hp_1	46,{
+	mes "[Higher Power]";
+	mes "Hello young one.";
+	mes "The time has come to";
+	mes  "choose your form.";
+	next;
+	mes "[Higher Power]";
+	mes "Are you ready to go down to the planet?";
+	next;	
+	switch(select("Yes, I'm ready:...I need some time to think")) {
+	case 1:
+	mes "[Higher Power]";
+	mes "Which form will you use?";
+	next;	
+		switch(select("Spikey:Cancel")) {
+			case 1:
+			savepoint "mush_way00",84,128;
+			callfunc "Job_Change",Job_Spikey;
+			addtoskill 1,9,SKILL_PERM;
+			skill 3100,1,SKILL_PERM;
+			mes "[Higher Power]";
+			mes "Good luck child.";
+			close2;
+			warp "mush_way00",84,128;
+			end;
+			case 2:
+			close;
+		}
+	case 2:
+	mes "[Higher Power]";
+	mes "Make haste.";	
+	close;
+	}
+}
+
+//mush_way00,77,125,4	script	Defender	46,{
+//	mes "fuk you";
+	//skill "SM_MOVINGRECOVERY",1,SKILL_PERM;
+	//skill "SM_FATALBLOW",1,SKILL_PERM;
+	//skill "SM_AUTOBERSERK",1,SKILL_PERM;
+//	skill 3100,1,SKILL_PERM;
+//	close;
+//}

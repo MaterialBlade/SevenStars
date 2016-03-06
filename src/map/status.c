@@ -2895,6 +2895,9 @@ static int status_get_spbonus(struct block_list *bl, enum e_status_bonus type) {
 static unsigned int status_calc_maxhpsp_pc(struct map_session_data* sd, unsigned int stat, bool isHP) {
 	double max = 0;
 	uint16 idx, level, job_id;
+	struct status_data *status; ///< Pointer to the player's base status
+
+	status = &sd->base_status;
 
 	nullpo_ret(sd);
 
@@ -2912,6 +2915,20 @@ static unsigned int status_calc_maxhpsp_pc(struct map_session_data* sd, unsigned
 		max += status_get_spbonus(&sd->bl,STATUS_BONUS_FIX);
 		max += (int64)(max * status_get_spbonus(&sd->bl,STATUS_BONUS_RATE) / 100); //Aegis accuracy
 	}
+
+#ifdef SEVENSTARS
+	//butts
+	if (isHP){
+		max = job_growth[idx].bonus[(int)sd->status.job_level].hp;
+		max += status_get_hpbonus(&sd->bl, STATUS_BONUS_FIX);
+		max += (int64)(max * status_get_hpbonus(&sd->bl, STATUS_BONUS_RATE) / 100); //Aegis accuracy
+	}
+	else {
+		max = 18;
+		max += status_get_spbonus(&sd->bl, STATUS_BONUS_FIX);
+		max += (int64)(max * status_get_spbonus(&sd->bl, STATUS_BONUS_RATE) / 100); //Aegis accuracy
+	}
+#endif
 
 	//Make sure it's not negative before casting to unsigned int
 	if(max < 1) max = 1;
@@ -3619,6 +3636,34 @@ int status_calc_pc_(struct map_session_data* sd, enum e_status_calc_opt opt)
 	else
 		sd->regen.state.walk = 0;
 
+#ifdef SEVENSTARS
+	// Job bonuses
+	/*index = pc_class2idx(sd->status.class_);
+	for (i = 0; i<(int)sd->status.job_level && i<MAX_LEVEL; i++) {
+		if (!job_info[index].job_bonus[i])
+			continue;
+		switch (job_info[index].job_bonus[i]) {
+		case 1: status->str++; break;
+		case 2: status->agi++; break;
+		case 3: status->vit++; break;
+		case 4: status->int_++; break;
+		case 5: status->dex++; break;
+		case 6: status->luk++; break;
+		}
+	}*/
+
+	//redo all that crap from up there ^
+	status->max_hp = job_growth[index].bonus[(int)sd->status.job_level].hp;
+	status->batk = job_growth[index].bonus[(int)sd->status.job_level].atk;
+	status->matk_min = job_growth[index].bonus[(int)sd->status.job_level].matk;
+	status->matk_max = job_growth[index].bonus[(int)sd->status.job_level].matk;
+	status->def = job_growth[index].bonus[(int)sd->status.job_level].def;
+	status->def2 = job_growth[index].bonus[(int)sd->status.job_level].def;
+	status->mdef = job_growth[index].bonus[(int)sd->status.job_level].mdef;
+	status->mdef2 = job_growth[index].bonus[(int)sd->status.job_level].mdef;
+	sd->max_weight = 20000;
+#endif
+
 	// Skill SP cost
 	if((skill=pc_checkskill(sd,HP_MANARECHARGE))>0 )
 		sd->dsprate -= 4*skill;
@@ -4013,6 +4058,12 @@ void status_calc_regen(struct block_list *bl, struct status_data *status, struct
 
 	if( sd ) {
 		struct regen_data_sub *sregen;
+#ifdef SEVENSTARS
+		regen->hp = 0;
+		regen->ssregen = 0;
+		regen->sregen = 0;
+		regen->sp = 0;
+#else
 		if( (skill=pc_checkskill(sd,HP_MEDITATIO)) > 0 ) {
 			val = regen->sp*(100+3*skill)/100;
 			regen->sp = cap_value(val, 1, SHRT_MAX);
@@ -4055,6 +4106,7 @@ void status_calc_regen(struct block_list *bl, struct status_data *status, struct
 		if( (skill=pc_checkskill(sd,MO_SPIRITSRECOVERY)) > 0 )
 			val += skill*2 + skill*status->max_sp/500;
 		sregen->sp = cap_value(val, 0, SHRT_MAX);
+#endif
 	}
 
 	if( bl->type == BL_HOM ) {

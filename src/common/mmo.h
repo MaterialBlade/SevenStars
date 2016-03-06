@@ -790,6 +790,8 @@ enum e_job {
 
 	JOB_REBELLION = 4215,
 
+	JOB_SPIKEY = 4230,
+
 	JOB_MAX,
 };
 

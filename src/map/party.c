@@ -1070,7 +1070,11 @@ int party_exp_share(struct party_data* p, struct block_list* src, unsigned int b
 		}
 #endif
 
+#ifdef SEVENSTARS
+		pc_gainexp(sd[i], src, 0, job_exp, false);
+#else
 		pc_gainexp(sd[i], src, base_exp, job_exp, false);
+#endif
 
 		if (zeny) // zeny from mobs [Valaris]
 			pc_getzeny(sd[i],zeny,LOG_TYPE_PICKDROP_MONSTER,NULL);

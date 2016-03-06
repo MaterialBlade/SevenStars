@@ -724,6 +724,16 @@ enum idletime_option {
 	IDLE_ATCOMMAND     = 0x200,
 };
 
+//oh god what am i doing
+
+struct growth_data {
+	struct jb_params {
+		uint16 hp, atk, def, matk, mdef;
+	} bonus[MAX_LEVEL];
+};
+
+struct growth_data job_growth[CLASS_COUNT];
+
 struct {
 	unsigned int base_hp[MAX_LEVEL], base_sp[MAX_LEVEL]; //Storage for the first calculation with hp/sp factor and multiplicator
 	int hp_factor, hp_multiplicator, sp_factor;

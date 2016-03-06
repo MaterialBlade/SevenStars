@@ -1,0 +1,24 @@
+//==================================================
+// mush_way01 - HammerZone
+//==================================================
+mush_way01,0,0,0,0	monster	Sky Troopa	3500,10,0,0,0
+mush_way01,0,0,0,0	monster	Sky Troopa	3503,4,0,0,0
+mush_way01,0,0,0,0	monster	Spikey	3501,6,0,0,0
+mush_way01,0,0,0,0	monster	Spikey	3504,5,0,0,0
+
+//==================================================
+// mush_way02 - the one with the spiny things
+//==================================================
+mush_way02,0,0,0,0	monster	Sky Troopa	3500,12,0,0,0
+mush_way02,0,0,0,0	monster	Goomba	3502,12,0,0,0
+mush_way02,0,0,0,0	monster	Sky Troopa	3503,1,0,0,0
+mush_way02,0,0,0,0	monster	Goomba	3505,3,0,0,0
+
+//==================================================
+// yuno_fild01 - entrance
+//==================================================
+mush_way00,0,0,0,0	monster	Sky Troopa	3500,6,0,0,0
+//mush_way00,0,0,0,0	monster	Sky Troopa	3503,2,0,0,0
+mush_way00,0,0,0,0	monster	Goomba	3502,8,0,0,0
+//mush_way00,0,0,0,0	monster	Goomba	3505,2,0,0,0
+

@@ -262,6 +262,9 @@ enum e_mapid {
 	MAPID_BABY_SURA,
 	MAPID_BABY_GENETIC,
 	MAPID_BABY_CHASER,
+
+	//Custom Jawbs
+	MAPID_SPIKEY = 0x11, //this should extend novice i think
 };
 
 //Max size for inputs to Graffiti, Talkie Box and Vending text prompts
